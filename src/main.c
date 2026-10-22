@@ -18,8 +18,8 @@
 
 /* Devicetree aliases */
 #define LED3_NODE DT_ALIAS(led0)
-#define Y0_NODE    DT_ALIAS(led1)
-#define Y1_NODE    DT_ALIAS(led2)
+#define Y0_NODE   DT_ALIAS(y0)
+#define Y1_NODE   DT_ALIAS(y1)
 
 /* GPIO specifications */
 static const struct gpio_dt_spec led3 =
