@@ -1,0 +1,65 @@
+/*
+ * app.overlay
+ * Devicetree overlay for the BKIT ARM4 kit (STM32F407ZGT6)
+ * Base board: stm32f4_disco (same STM32F407 chip, 8 MHz HSE crystal,
+ * 168 MHz SYSCLK). This file "patches" the base board to match the BKIT hardware.
+ */
+
+/ {
+    model = "BKIT ARM4 (STM32F407ZGT6)";
+
+    /* 1. Use USART1 (PA9/PA10 -> MAX232 -> RS232 DB9 port) as the console */
+    chosen {
+        zephyr,console = &usart1;
+        zephyr,shell-uart = &usart1;
+    };
+
+    /* 2. Declare LED3 (DEBUG LED) on pin PE4, active high */
+    leds {
+        debug_led: led_debug {
+            gpios = <&gpioe 4 GPIO_ACTIVE_HIGH>;
+            label = "LED3 DEBUG (PE4)";
+        };
+
+        /* Output Y0 / Y1 (via opto-couplers to the 12V terminals) - status LEDs on the kit */
+        output_y0: output_y0 {
+            gpios = <&gpioe 5 GPIO_ACTIVE_HIGH>;
+            label = "OUTPUT Y0 (PE5)";
+        };
+
+        output_y1: output_y1 {
+            gpios = <&gpioe 6 GPIO_ACTIVE_HIGH>;
+            label = "OUTPUT Y1 (PE6)";
+        };
+    };
+
+    /* 3. Point the aliases at the BKIT hardware (the program uses led0/led1/led2) */
+    aliases {
+        led0 = &debug_led; /* LED3 - PE4 */
+        led1 = &output_y0; /* Out Y0 - PE5 */
+        led2 = &output_y1; /* Out Y1 - PE6 */
+        /delete-property/ led3; /* Discovery blue LED: not used */
+    };
+};
+
+/* USART1: PA9 TX, PA10 RX (see Table 7 ARM_KIT.pdf) */
+&usart1 {
+    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "okay";
+};
+
+/*
+ * 4. Disable Discovery-board peripherals whose pins clash with the BKIT hardware
+ * (PA2/PA3 go to the ESP8266, PD0/PD1 to FSMC, PB6/PB9 to I2C/CAN, ...)
+ */
+&usart2 { status = "disabled"; };
+&can1 { status = "disabled"; };
+&can2 { status = "disabled"; };
+&i2c1 { status = "disabled"; };
+&i2s3 { status = "disabled"; };
+&adc1 { status = "disabled"; };
+&timers2 { status = "disabled"; };
+&timers4 { status = "disabled"; };
+&usbotg_fs { status = "disabled"; };
